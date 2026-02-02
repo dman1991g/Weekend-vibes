@@ -12,6 +12,7 @@ btn.addEventListener("click", () => {
 
   navigator.geolocation.getCurrentPosition(
     (position) => {
+      alert("SUCCESS:Location callback fired");
       const lat = position.coords.latitude;
       const lon = position.coords.longitude;
 
