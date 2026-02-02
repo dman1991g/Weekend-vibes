@@ -18,18 +18,18 @@ btn.addEventListener("click", () => {
       console.log("Latitude:", lat);
       console.log("Longitude:", lon);
 
-      // Temporary placeholders (next steps will replace these)
+      // Show the sections
       weatherSection.classList.remove("hidden");
       eventsSection.classList.remove("hidden");
 
-      document.getElementById("location").textContent =
-        `Lat: ${lat.toFixed(2)}, Lon: ${lon.toFixed(2)}`;
+      // Update text in existing elements (DO NOT use innerHTML)
+      const locationEl = document.getElementById("location");
+      const weatherEl = document.getElementById("weather");
+      const tipEl = document.getElementById("weatherTip");
 
-      document.getElementById("weather").textContent =
-        "Weather data coming next step 🌦";
-
-      document.getElementById("weatherTip").textContent =
-        "Events will load here soon 🎉";
+      locationEl.textContent = `Lat: ${lat.toFixed(2)}, Lon: ${lon.toFixed(2)}`;
+      weatherEl.textContent = "Weather data coming next step 🌦";
+      tipEl.textContent = "Events will load here soon 🎉";
 
       btn.textContent = "Location Found ✅";
     },
