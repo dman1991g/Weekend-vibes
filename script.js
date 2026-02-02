@@ -1,42 +1,48 @@
-const btn = document.getElementById("findEventsBtn");
+const btn = document.getElementById("getLocationBtn");
+const locationEl = document.getElementById("location");
 const weatherSection = document.getElementById("weatherSection");
-const eventsSection = document.getElementById("eventsSection");
 
 btn.addEventListener("click", () => {
+  alert("Button clicked ✔");
+
   if (!navigator.geolocation) {
-    alert("Geolocation is not supported by your browser");
+    alert("Geolocation NOT supported");
     return;
   }
 
-  btn.textContent = "Getting your location...";
+  alert("Requesting location…");
 
   navigator.geolocation.getCurrentPosition(
     (position) => {
-      alert("SUCCESS:Location callback fired");
+      alert("SUCCESS callback fired ✔");
+
+      console.log("Raw position object:", position);
+
       const lat = position.coords.latitude;
       const lon = position.coords.longitude;
+
+      alert(`Coords received:\nLat: ${lat}\nLon: ${lon}`);
 
       console.log("Latitude:", lat);
       console.log("Longitude:", lon);
 
-      // Temporary placeholders (next steps will replace these)
+      if (!locationEl) {
+        alert("❌ location element is NULL");
+        return;
+      }
+
+      alert("location element FOUND ✔");
+
+      locationEl.textContent =
+        `DEBUG → Lat: ${lat.toFixed(4)}, Lon: ${lon.toFixed(4)}`;
+
       weatherSection.classList.remove("hidden");
-      eventsSection.classList.remove("hidden");
 
-      document.getElementById("location").textContent =
-        `Lat: ${lat.toFixed(2)}, Lon: ${lon.toFixed(2)}`;
-
-      document.getElementById("weather").textContent =
-        "Weather data coming next step 🌦";
-
-      document.getElementById("weatherTip").textContent =
-        "Events will load here soon 🎉";
-
-      btn.textContent = "Location Found ✅";
+      alert("Text written to screen ✔");
     },
-    () => {
-      alert("Unable to retrieve your location");
-      btn.textContent = "Find Events Near Me";
+    (error) => {
+      alert(`ERROR callback fired ❌\nCode: ${error.code}\n${error.message}`);
+      console.error("Geolocation error:", error);
     }
   );
 });
