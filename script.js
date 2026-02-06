@@ -4,7 +4,7 @@ const locationEl = document.getElementById("location");
 const weatherEl = document.getElementById("weather");
 const weatherTipEl = document.getElementById("weatherTip");
 
-const API_KEY = "YOUR_API_KEY_HERE"; // keep quotes
+const API_KEY = "cac0bd29b868d3f7836472caa5b684f2"; // keep quotes
 
 btn.addEventListener("click", () => {
   locationEl.textContent = "Requesting location...";
