@@ -1,88 +1,81 @@
 const btn = document.getElementById("findEventsBtn");
 const weatherSection = document.getElementById("weatherSection");
-const eventsSection = document.getElementById("eventSection");
+const locationEl = document.getElementById("location");
+const weatherEl = document.getElementById("weather");
+const weatherTipEl = document.getElementById("weatherTip");
 
-const API_KEY = "cac0bd29b868d3f7836472caa5b684f2"; // keep quotes
+const API_KEY = "YOUR_API_KEY_HERE"; // keep quotes
 
 btn.addEventListener("click", () => {
+  locationEl.textContent = "Requesting location...";
+  weatherEl.textContent = "";
+  weatherTipEl.textContent = "";
+
   if (!navigator.geolocation) {
-    alert("Geolocation is not supported by your browser");
+    locationEl.textContent = "❌ Geolocation not supported";
     return;
   }
 
-  btn.textContent = "Getting your location...";
-
   navigator.geolocation.getCurrentPosition(
-    (position) => {
+    async (position) => {
       const lat = position.coords.latitude;
       const lon = position.coords.longitude;
 
-      console.log("Latitude:", lat);
-      console.log("Longitude:", lon);
-
       weatherSection.classList.remove("hidden");
-      eventsSection.classList.remove("hidden");
 
-      fetchWeather(lat, lon);
+      locationEl.textContent = `📍 Lat: ${lat.toFixed(2)}, Lon: ${lon.toFixed(2)}`;
+
+      const url = `https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&units=imperial&appid=${API_KEY}`;
+
+      weatherEl.textContent = "🌐 Fetching weather...";
+      weatherTipEl.textContent = "⏳ Waiting for response...";
+
+      try {
+        const response = await fetch(url);
+
+        weatherEl.textContent = `🔍 HTTP Status: ${response.status}`;
+
+        if (!response.ok) {
+          const errorText = await response.text();
+          weatherTipEl.textContent = `❌ API Error: ${errorText}`;
+          return;
+        }
+
+        const data = await response.json();
+
+        // Debug output
+        console.log("Weather API data:", data);
+
+        const temp = data.main.temp;
+        const condition = data.weather[0].description;
+
+        weatherEl.textContent = `🌡 ${temp}°F — ${condition}`;
+
+        // Weather tips logic
+        let tip = "";
+
+        if (temp <= 32) {
+          tip = "❄️ Freezing — bundle up!";
+        } else if (temp <= 45) {
+          tip = "🧥 Cold — jacket recommended";
+        } else if (temp <= 65) {
+          tip = "🙂 Cool — light layers";
+        } else {
+          tip = "😎 Nice out — enjoy!";
+        }
+
+        weatherTipEl.textContent = tip;
+
+      } catch (error) {
+        weatherEl.textContent = "❌ Fetch failed";
+        weatherTipEl.textContent = error.message;
+        console.error(error);
+      }
+
+      btn.textContent = "Location Found ✅";
     },
-    (error) => {
-      console.error("Geolocation error:", error);
-      alert("Unable to retrieve your location");
-      btn.textContent = "Find Events Near Me";
+    () => {
+      locationEl.textContent = "❌ Location permission denied";
     }
   );
 });
-
-function fetchWeather(lat, lon) {
-  const url = `https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&units=imperial&appid=${API_KEY}`;
-
-  console.log("Weather API URL:", url);
-
-  fetch(url)
-    .then((response) => {
-      if (!response.ok) {
-        throw new Error(`Weather API error: ${response.status}`);
-      }
-      return response.json();
-    })
-    .then((data) => {
-      console.log("Weather API response:", data);
-
-      const temp = data.main.temp;
-      const condition = data.weather[0].main;
-
-      document.getElementById("location").textContent =
-        `Your location: ${lat.toFixed(2)}, ${lon.toFixed(2)}`;
-
-      document.getElementById("weather").textContent =
-        `${condition} — ${Math.round(temp)}°F`;
-
-      // ✅ FIXED WEATHER TIP LOGIC
-      let tip = "";
-
-      if (temp <= 40) {
-        tip = "🧥 It’s cold out — bundle up!";
-      } else if (condition === "Rain") {
-        tip = "🌧 Bring an umbrella.";
-      } else if (condition === "Snow") {
-        tip = "❄️ Dress warm and watch for ice.";
-      } else if (condition === "Clear") {
-        tip = "☀️ Clear skies — nice day to get out.";
-      } else if (condition === "Clouds") {
-        tip = "☁️ Cloudy, but still fine for plans.";
-      } else {
-        tip = "🙂 Weather looks okay today.";
-      }
-
-      document.getElementById("weatherTip").textContent = tip;
-
-      btn.textContent = "Location Found ✅";
-    })
-    .catch((error) => {
-      console.error("Weather fetch failed:", error);
-      document.getElementById("weather").textContent =
-        "Unable to load weather data.";
-      document.getElementById("weatherTip").textContent =
-        "Weather tips unavailable.";
-    });
-}
