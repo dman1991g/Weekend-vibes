@@ -1,6 +1,8 @@
 const btn = document.getElementById("findEventsBtn");
 const weatherSection = document.getElementById("weatherSection");
-const eventsSection = document.getElementById("eventsSection");
+const eventsSection = document.getElementById("eventSection");
+
+const API_KEY = "405aaf6e09ebcac783d20cf3fb935b6e"; // 👈 replace this
 
 btn.addEventListener("click", () => {
   if (!navigator.geolocation) {
@@ -11,29 +13,64 @@ btn.addEventListener("click", () => {
   btn.textContent = "Getting your location...";
 
   navigator.geolocation.getCurrentPosition(
-    (position) => {
+    async (position) => {
       const lat = position.coords.latitude;
       const lon = position.coords.longitude;
 
       console.log("Latitude:", lat);
       console.log("Longitude:", lon);
 
-      // Show the sections
+      // Show sections
       weatherSection.classList.remove("hidden");
       eventsSection.classList.remove("hidden");
 
-      // Update text in existing elements (DO NOT use innerHTML)
-      const locationEl = document.getElementById("location");
-      const weatherEl = document.getElementById("weather");
-      const tipEl = document.getElementById("weatherTip");
+      try {
+        // 🌦️ Weather API call
+        const url = `https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&units=imperial&appid=${API_KEY}`;
+        const response = await fetch(url);
+        const data = await response.json();
 
-      locationEl.textContent = `Lat: ${lat.toFixed(2)}, Lon: ${lon.toFixed(2)}`;
-      weatherEl.textContent = "Weather data coming next step 🌦";
-      tipEl.textContent = "Events will load here soon 🎉";
+        console.log("Weather API response:", data);
 
-      btn.textContent = "Location Found ✅";
+        // Location name
+        document.getElementById("location").textContent =
+          data.name || "Your Location";
+
+        // Weather summary
+        document.getElementById("weather").textContent =
+          `${Math.round(data.main.temp)}°F • ${data.weather[0].main}`;
+
+        // Weather tips
+        const temp = data.main.temp;
+        const condition = data.weather[0].main.toLowerCase();
+
+        let tip = "Have a great day!";
+
+        if (condition.includes("rain")) {
+          tip = "🌧️ Bring an umbrella!";
+        } else if (temp < 40) {
+          tip = "🧥 It’s cold — bundle up!";
+        } else if (temp > 85) {
+          tip = "🥵 Stay hydrated!";
+        } else if (condition.includes("clear")) {
+          tip = "☀️ Perfect weather for outdoor events!";
+        }
+
+        document.getElementById("weatherTip").textContent = tip;
+
+        // Placeholder for events (next step)
+        document.getElementById("eventsContainer").textContent =
+          "Events will load here soon 🎉";
+
+        btn.textContent = "Weather Loaded ✅";
+      } catch (error) {
+        console.error(error);
+        alert("Failed to load weather data");
+        btn.textContent = "Try Again";
+      }
     },
-    () => {
+    (error) => {
+      console.error(error);
       alert("Unable to retrieve your location");
       btn.textContent = "Find Events Near Me";
     }
